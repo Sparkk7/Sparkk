@@ -1,0 +1,49 @@
+-- Configurações
+local fov = 60 -- Ângulo do campo de visão (FOV) em graus
+
+-- Função para calcular a distância entre dois vetores
+local function calculateDistance(v1, v2)
+    return (v1 - v2).magnitude
+end
+
+-- Função para verificar se um jogador está dentro do FOV
+local function isInFOV(playerPos, viewPos, viewDirection, fov)
+    local direction = (playerPos - viewPos).unit
+    local dotProduct = direction:Dot(viewDirection)
+    local angle = math.acos(dotProduct) * (180 / math.pi)
+    return angle < fov / 2
+end
+
+-- Função para encontrar e classificar jogadores
+local function spyPlayers()
+    local player = game.Players.LocalPlayer
+    local viewPos = player.Character.HumanoidRootPart.Position
+    local viewDirection = player.Character.HumanoidRootPart.CFrame.LookVector
+
+    for _, target in pairs(game.Players:GetPlayers()) do
+        if target ~= player and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+            local targetPos = target.Character.HumanoidRootPart.Position
+            local isVisible = isInFOV(targetPos, viewPos, viewDirection, fov)
+            
+            -- Diferencia entre equipe amiga e inimiga
+            local teamColor = target.TeamColor.Name
+            local teamStatus = "Neutral"
+            
+            if teamColor == "Blue" then
+                teamStatus = "Amigo"
+            elseif teamColor == "Red" then
+                teamStatus = "Inimigo"
+            end
+
+            -- Exibe informações sobre o jogador
+            print("Jogador:", target.Name)
+            print("Equipe:", teamStatus)
+            print("Visível:", isVisible)
+            print("Distância:", calculateDistance(viewPos, targetPos))
+            print("--------")
+        end
+    end
+end
+
+-- Executa a função de espionagem
+spyPlayers()
